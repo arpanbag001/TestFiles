@@ -4,14 +4,22 @@
 (function(global) {
   'use strict';
   
+  // CRITICAL: Set up polyfills IMMEDIATELY before any other code
   // React Native ErrorUtils polyfill for Hermes
-  global.ErrorUtils = global.ErrorUtils || {
-    setGlobalHandler: function() {},
-    getGlobalHandler: function() { return function() {}; },
-    reportFatalError: function(error) { console.error('Fatal Error:', error); },
-    reportSoftException: function(error) { console.warn('Soft Exception:', error); },
-    reportError: function(error) { console.error('Error:', error); }
-  };
+  if (!global.ErrorUtils) {
+    global.ErrorUtils = {
+      setGlobalHandler: function() {},
+      getGlobalHandler: function() { return function() {}; },
+      reportFatalError: function(error) { console.error('Fatal Error:', error); },
+      reportSoftException: function(error) { console.warn('Soft Exception:', error); },
+      reportError: function(error) { console.error('Error:', error); }
+    };
+  }
+  
+  // Ensure globalThis is available
+  if (typeof globalThis === 'undefined') {
+    global.globalThis = global;
+  }
 
   // Minimal RN bridge polyfill so native can call into JS
   global.__callableModules = global.__callableModules || {};
