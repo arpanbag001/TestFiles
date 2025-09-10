@@ -3,7 +3,7 @@
 
 (function(global) {
   'use strict';
-
+  
   // React Native ErrorUtils polyfill for Hermes
   global.ErrorUtils = global.ErrorUtils || {
     setGlobalHandler: function() {},
@@ -11,6 +11,18 @@
     reportFatalError: function(error) { console.error('Fatal Error:', error); },
     reportSoftException: function(error) { console.warn('Soft Exception:', error); },
     reportError: function(error) { console.error('Error:', error); }
+  };
+
+  // React Native native module polyfills
+  global.NativeModules = global.NativeModules || {};
+  global.NativeEventEmitter = global.NativeEventEmitter || function() {};
+  
+  // RCTDeviceEventEmitter polyfill
+  global.RCTDeviceEventEmitter = global.RCTDeviceEventEmitter || {
+    emit: function() {},
+    addListener: function() { return { remove: function() {} }; },
+    removeAllListeners: function() {},
+    removeListener: function() {}
   };
 
   // React Native AppRegistry polyfill
