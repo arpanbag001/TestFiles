@@ -13,6 +13,38 @@
     reportError: function(error) { console.error('Error:', error); }
   };
 
+  // Minimal RN bridge polyfill so native can call into JS
+  global.__callableModules = global.__callableModules || {};
+  if (typeof global.__fbBatchedBridge === 'undefined') {
+    global.__fbBatchedBridge = {
+      registerCallableModule: function(name, module) {
+        global.__callableModules[name] = module;
+      },
+      getCallableModule: function(name) {
+        return global.__callableModules[name];
+      },
+      callFunctionReturnFlushedQueue: function() { return null; },
+      flushedQueue: function() { return null; },
+      invokeCallbackAndReturnFlushedQueue: function() { return null; }
+    };
+  }
+  if (!global.__callableModules['RCTDeviceEventEmitter']) {
+    global.__fbBatchedBridge.registerCallableModule('RCTDeviceEventEmitter', {
+      emit: function() {},
+      addListener: function() {},
+      removeAllListeners: function() {},
+      removeListener: function() {}
+    });
+  }
+  // Alias older global used by RN in some versions
+  if (typeof global.__registerCallableModule === 'undefined') {
+    global.__registerCallableModule = function(name, module) {
+      if (global.__fbBatchedBridge && global.__fbBatchedBridge.registerCallableModule) {
+        global.__fbBatchedBridge.registerCallableModule(name, module);
+      }
+    };
+  }
+
   // React Native native module polyfills
   global.NativeModules = global.NativeModules || {};
   global.NativeEventEmitter = global.NativeEventEmitter || function() {};
@@ -27,9 +59,25 @@
 
   // React Native AppRegistry polyfill
   global.AppRegistry = {
-    registerComponent: function(name, component) {
+    registerComponent: function(name, componentProvider) {
       global.__APP_REGISTRY__ = global.__APP_REGISTRY__ || {};
-      global.__APP_REGISTRY__[name] = component;
+      global.__APP_REGISTRY__[name] = componentProvider;
+    },
+    runApplication: function(name, params) {
+      try {
+        var provider = global.__APP_REGISTRY__ && global.__APP_REGISTRY__[name];
+        if (typeof provider === 'function') {
+          var Component = provider();
+          var props = (params && params.initialProps) || {};
+          global.__LAST_RENDERED__ = Component(props);
+        }
+      } catch (e) {
+        if (global.ErrorUtils && global.ErrorUtils.reportError) {
+          global.ErrorUtils.reportError(e);
+        } else {
+          console.error(e);
+        }
+      }
     }
   };
 
@@ -138,4 +186,4 @@
     module.exports = { Bundle1 };
   }
 
-})(typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : this);
+})(typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : (typeof window !== 'undefined' ? window : this)));
