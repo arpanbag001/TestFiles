@@ -198,6 +198,16 @@
         fontSize: 16,
         color: theme === 'dark' ? '#ccc' : '#666'
       },
+      remoteHeader: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#8B0000', // Dark red color
+        textAlign: 'center',
+        marginBottom: 16,
+        textShadowColor: 'rgba(0,0,0,0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2
+      },
       statusBar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -277,6 +287,9 @@
     return View({
       style: styles.container
     }, [
+      Text({
+        style: styles.remoteHeader
+      }, 'Hi From Remote'),
       View({
         style: styles.header
       }, [
