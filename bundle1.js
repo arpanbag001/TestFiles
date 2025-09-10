@@ -4,6 +4,15 @@
 (function(global) {
   'use strict';
 
+  // React Native ErrorUtils polyfill for Hermes
+  global.ErrorUtils = global.ErrorUtils || {
+    setGlobalHandler: function() {},
+    getGlobalHandler: function() { return function() {}; },
+    reportFatalError: function(error) { console.error('Fatal Error:', error); },
+    reportSoftException: function(error) { console.warn('Soft Exception:', error); },
+    reportError: function(error) { console.error('Error:', error); }
+  };
+
   // React Native AppRegistry polyfill
   global.AppRegistry = {
     registerComponent: function(name, component) {
